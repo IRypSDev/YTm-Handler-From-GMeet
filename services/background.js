@@ -1,5 +1,4 @@
 
-import { MessageType } from '../utils/constants.js';
 
 chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 
@@ -7,7 +6,7 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 
     switch( request.type ) {
 
-        case MessageType.COMMAND:
+        case "COMMAND":
             console.log("Debería accionar un comando")
             break;
 

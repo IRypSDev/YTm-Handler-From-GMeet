@@ -14,5 +14,13 @@
     ],
     "background": {
         "service_worker": "/services/background.js"
-    }
+    },
+    "content_scripts": [
+        {
+            "matches": [ "https://meet.google.com/*" ],
+            "js": [ 
+                "/scripts/readCommands.js"
+            ]
+        }
+      ]
 }
