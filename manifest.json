@@ -1,0 +1,18 @@
+{
+    "manifest_version": 3,
+    "name": "YTM Handler from GM",
+    "version": "1.0",
+    "description": "Just a simple personal handler for YT music from google meet messages",
+    "icons": {
+        "16": "/icon/tmp.png",
+        "48": "/icon/tmp.png",
+        "128": "/icon/tmp.png"
+    },
+    "permissions": [
+        "activeTab",
+        "tabs"
+    ],
+    "background": {
+        "service_worker": "/services/background.js"
+    }
+}
