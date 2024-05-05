@@ -12,6 +12,9 @@
         "activeTab",
         "tabs"
     ],
+    "action": {
+        "default_popup": "/view/popup.html"
+    },
     "background": {
         "service_worker": "/services/background.js"
     },
@@ -22,5 +25,5 @@
                 "/scripts/readCommands.js"
             ]
         }
-      ]
+    ]
 }

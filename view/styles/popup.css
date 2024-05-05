@@ -1,0 +1,31 @@
+body {
+    background-color: #e6e3ff;
+    max-width: 300px !important;
+    min-width: 300px !important;
+    font-family: 'DM Sans', sans-serif;
+}
+
+
+#tabsContainer {
+    padding: 10px;
+}
+
+.tab-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #FFF;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+}
+
+.tab-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.tab-name {
+    flex-grow: 1;
+}
