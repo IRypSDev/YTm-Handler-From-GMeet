@@ -1,11 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     const tabsContainer = document.getElementById('tabsContainer');
   
-    // Función para actualizar el listado de pestañas
     function updateTabsList() {
         chrome.tabs.query({url: "*://music.youtube.com/*"}, function(tabs) {
             
-            removeAllTabsFromContainer( tabsContainer );
+            removeAllChildsFromContainer( tabsContainer );
 
             tabs.forEach(tab => {
                 const tabDiv = document.createElement('div');
@@ -22,27 +21,100 @@ document.addEventListener('DOMContentLoaded', function() {
                 tabDiv.appendChild(tabIcon);
                 tabDiv.appendChild(tabName);
 
+                tabDiv.addEventListener( "click", () => { saveSelectedTab(tab.id) } );
+
                 tabsContainer.appendChild(tabDiv);
+
             });
         });
     }
-  
-    // Actualizar el listado inicialmente
+
+
     updateTabsList();
-  
-    // Escuchar el evento de actualización de pestañas
+
+
     chrome.tabs.onUpdated.addListener(function() {
-      updateTabsList();
+        updateTabsList();
+        recognizeSelectedTab();
     });
-  });
 
 
-
-
-function removeAllTabsFromContainer( nodeParent ) {
-    let child = nodeParent.lastElementChild;
-    while (child) {
-        nodeParent.removeChild(child);
-        child = nodeParent.lastElementChild;
+    function removeAllChildsFromContainer( nodeParent ) {
+        let child = nodeParent.lastElementChild;
+        while (child) {
+            nodeParent.removeChild(child);
+            child = nodeParent.lastElementChild;
+        }
     }
-}
+    
+    
+    function saveSelectedTab( tabId ) {
+        chrome.storage.session.set({selectedTabId: tabId}, function() {
+            console.log('ID de la pestaña guardado/actualizado: ' + tabId);
+        });
+
+        recognizeSelectedTab();
+    }
+    
+    
+    function recognizeSelectedTab() {
+    
+        const selectedTabMessage = document.getElementById('selectedTabMessage');
+        selectedTabMessage.innerText = "";
+
+        const selectedImageTabContainer = document.getElementById('selectedImageTab');
+        removeAllChildsFromContainer( selectedImageTabContainer );
+
+        const selectedTabTitle = document.getElementById('infoTitle');
+        const selectedTabID = document.getElementById('infoID');
+    
+
+        const notFoundText = ' (Ninguna)';
+    
+
+        chrome.storage.session.get(['selectedTabId'], function(result) {
+    
+            let tabId = result.selectedTabId;
+    
+            if (!!!tabId) {
+                selectedTabMessage.innerText = notFoundText;
+                return;
+            }
+    
+            chrome.tabs.get(tabId, function(tab) {
+    
+                if ( !!!tab ) {
+                    selectedTabMessage.innerText = notFoundText;
+                    return;
+                }
+    
+                const nowListeningImage = document.createElement('img');
+                nowListeningImage.className = 'selected-image';
+                nowListeningImage.src = getNowPlayingImage(tab?.url) || '/icon/tmp.png';
+
+                selectedImageTabContainer.appendChild( nowListeningImage );
+
+                selectedTabTitle.innerText = tab.title || "-";
+                selectedTabID.innerText = tab.id || "-";
+    
+            });
+        });
+        
+    }
+
+    recognizeSelectedTab();
+
+
+
+    function getNowPlayingImage( videoURL ) {
+
+        if (!!!videoURL) return null;
+
+        let splited = videoURL?.split("v=");
+        let splitedAgain = splited[1]?.split("&");
+        let videoId = splitedAgain ? splitedAgain[0] : null;
+
+        return !!videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
+    }
+
+  });
