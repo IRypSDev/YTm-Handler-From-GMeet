@@ -11,13 +11,15 @@
     "permissions": [
         "activeTab",
         "tabs",
-        "storage"
+        "storage",
+        "scripting"
     ],
     "action": {
         "default_popup": "/view/popup.html"
     },
     "background": {
-        "service_worker": "/services/background.js"
+        "service_worker": "/services/background.js",
+        "type": "module"
     },
     "content_scripts": [
         {
@@ -26,5 +28,8 @@
                 "/scripts/readCommands.js"
             ]
         }
-    ]
+    ],
+    "host_permissions": [
+        "https://music.youtube.com/*"
+      ]
 }

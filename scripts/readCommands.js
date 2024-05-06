@@ -6,6 +6,8 @@ const USERNAME_CLASS = "poVWob";
 const MESSAGE_TIME_CLASS = "MuzmKe";
 const MESSAGE_SET_CLASS = "EY8ABd-OWXEXe-TAWMXe";
 
+const MAIN_COMMAND = "!";
+
 
 
 function searchChat() {
@@ -43,6 +45,10 @@ function observeChatbox( chatBoxElement ) {
                 let message = mutation.addedNodes[0].data;
                 console.log(`El mensaje enviado es: ${message}`);
 
+                if ( message.toString().startsWith(MAIN_COMMAND) ) {
+                    sendCommand( message.split(MAIN_COMMAND)[1] );
+                }
+
             }
         }
     });
@@ -51,6 +57,19 @@ function observeChatbox( chatBoxElement ) {
         observer.observe(chatBoxElement, { childList: true, subtree: true });
     } else {
         console.warn("❌ Ocurrió un error al recibir el elemento de chat");
+    }
+
+}
+
+
+async function sendCommand( command ) {
+
+    try {
+        console.log( `⏲ Ejecutando comando (${ command })` );
+        await chrome.runtime.sendMessage({ type: "COMMAND", message: command });
+        console.log( "✅ Comando ejecutado" );
+    } catch {
+        console.warn("❌ Ocurrió un error inesperado al ejecutar el comando");
     }
 
 }
