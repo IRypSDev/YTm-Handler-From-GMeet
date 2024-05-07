@@ -1,31 +1,23 @@
 import { COMMANDS } from "../scripts/commands.js";
+import { RESPONSE } from "../scripts/responses.js";
 
 chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
-
-    // sendResponse({farewell: "goodbye"});
 
     switch( request.type ) {
 
         case "COMMAND":
-            // console.log("Debería accionar un comando")
 
-            chrome.storage.session.get(['selectedTabId'], function(result) {
-    
-                let tabId = result.selectedTabId;
-                if (!!!tabId) {
-                    console.warn("❌ No se tiene una tab seleccionada");
+            let command = request.message.toString().toLowerCase();
+
+            chrome.tabs.query({url: "*://meet.google.com/*"}, function(tabs) {
+        
+                if ( !tabs || tabs.length == 0 ) {
+                    console.warn("❌ No se encuentra una tab para enviar una respuesta")
                     return;
-                };
-        
-                chrome.tabs.get(tabId, function(tab) {
-        
-                    if ( !!!tab ) {
-                        console.warn("❌ No se tiene una tab con ID válido");
-                        return;
-                    }
-        
-                    executeCommand( tab.id, request.message );
-                });
+                }
+
+                executeCommand( tabs[0].id, command );
+
             });
 
             break;
@@ -39,40 +31,83 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 
 
 
-function executeCommand( tabID, command ) {
+async function executeCommand( responseTabID, command ) {
 
-    switch( command ) {
+    chrome.storage.session.get(['selectedTabId'], function(result) {
+    
+        let tabId = result.selectedTabId;
+
+        if (!!!tabId) {
+            sendResponseMessage( responseTabID, "❌ No se está escuchando ninguna pestaña" );
+            return;
+        };
+
+        chrome.tabs.get(tabId, function(tab) {
+
+            if ( !!!tab ) {
+                sendResponseMessage( responseTabID, "❌ El ID de la pestaña es inválido" );
+                return;
+            }
+
+            searchCommand( responseTabID, tab.id, command );
+        });
+    });
+
+
+}
+
+
+
+
+function searchCommand( responseTabID, ytmTabID, candidate ) {
+
+    switch( candidate ) {
 
         case "prev":
-            chrome.scripting.executeScript({
-                target: {tabId: tabID},
-                func: COMMANDS.prev
-            });
+            sendActionToTab( responseTabID, ytmTabID, COMMANDS.prev );
             break;
         
         case "skip":
         case "s":
-            chrome.scripting.executeScript({
-                target: {tabId: tabID},
-                func: COMMANDS.skip
-            });
+            sendActionToTab( responseTabID, ytmTabID, COMMANDS.skip );
             break;
 
-        case "pase":
+        case "pause":
         case "p":
         case "resume":
         case "r":
-            chrome.scripting.executeScript({
-                target: {tabId: tabID},
-                func: COMMANDS.pause
-            });
+            sendActionToTab( responseTabID, ytmTabID, COMMANDS.pause )
             break;
 
         default:
-            chrome.scripting.executeScript({
-                target: {tabId: tabID},
-                func: COMMANDS.def
-            });
+            sendResponseMessage( responseTabID, `❓ No se reconoce el comando` );
     }
+    
+}
 
+
+function sendActionToTab( responseTabID, ytmTabID, action ) {
+    chrome.scripting.executeScript({
+        target: {tabId: ytmTabID},
+        func: action
+    }, function (result) {
+        
+        let response = result[0].result;
+
+        if ( !response || response.status != 0 ) {
+            sendResponseMessage( responseTabID, `❌ El comando no pudo completarse con éxito (${response.message})` );
+            return;
+        }
+
+        sendResponseMessage( responseTabID, response.message );
+    });
+}
+
+
+function sendResponseMessage( meetID, message ) {
+    chrome.scripting.executeScript({
+        target: {tabId: meetID},
+        func: RESPONSE.responseInChat,
+        args: [message]
+    });
 }

@@ -2,35 +2,30 @@
 export const COMMANDS = {
 
     prev: () => {
-        let prevButtom = document.querySelector(".previous-button");
+        let prevButton = document.querySelector(".previous-button");
+        
+        if ( !prevButton ) return { status: 1, message: "❌ No se encuentra el elemento" };
 
-        if ( prevButtom ) prevButtom.click();
-        else {
-            console.warn("❌ No se encuentra el elemento");
-        }
+        prevButton.click();
+        return { status: 0, message: "✅ Retrocediendo..." };
     },
 
     skip: () => {
-        let prevButtom = document.querySelector(".next-button");
+        let nextButton = document.querySelector(".next-button");
 
-        if ( prevButtom ) prevButtom.click();
-        else {
-            console.warn("❌ No se encuentra el elemento");
-        }
+        if ( !nextButton ) return { status: 1, message: "❌ No se encuentra el elemento" };
+
+        nextButton.click();
+        return { status: 0, message: "✅ Saltando a la siguiente canción..." };
     },
 
     pause: () => {
-        let prevButtom = document.querySelector(".play-pause-button");
+        let pauseButton = document.querySelector(".play-pause-button");
 
-        if ( prevButtom ) prevButtom.click();
-        else {
-            console.warn("❌ No se encuentra el elemento");
-        }
+        if ( !pauseButton ) return { status: 1, message: "❌ No se encuentra el elemento" };
+
+        pauseButton.click();
+        return { status: 0, message: "✅ Pausando/Reanudando..." };
     },
-
-
-    def: () => {
-        console.log("Comando random 🐱‍👤🚨🤖😼🐱‍🏍")
-    }
 
 }
