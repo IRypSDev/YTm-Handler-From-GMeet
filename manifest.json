@@ -30,6 +30,7 @@
         }
     ],
     "host_permissions": [
-        "https://music.youtube.com/*"
+        "https://music.youtube.com/*",
+        "https://meet.google.com/*"
       ]
 }
