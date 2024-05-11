@@ -63,6 +63,15 @@ function searchCommand( responseTabID, ytmTabID, candidate ) {
 
     switch( candidate ) {
 
+        //Info
+        
+        case "np":
+        case "nowplaying":
+            sendActionToTab( responseTabID, ytmTabID, COMMANDS.nowPlaying );
+            break;
+
+        // Controls
+
         case "prev":
             sendActionToTab( responseTabID, ytmTabID, COMMANDS.prev );
             break;

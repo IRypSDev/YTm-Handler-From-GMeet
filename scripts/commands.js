@@ -28,4 +28,32 @@ export const COMMANDS = {
         return { status: 0, message: "✅ Pausando/Reanudando..." };
     },
 
+
+    nowPlaying: () => {
+
+        try {
+
+            // title
+            let titleElement = document.querySelector("yt-formatted-string.title.ytmusic-player-bar");
+            let title = titleElement.textContent || titleElement.getAttribute("title");
+
+            // url
+            let currentURL = window.location.href;
+
+            if (!currentURL.includes("/watch?")) {
+                let tooglePlayerButton = document.querySelectorAll("tp-yt-paper-icon-button.toggle-player-page-button.style-scope.ytmusic-player-bar");
+                tooglePlayerButton[tooglePlayerButton.length-1].click();
+                currentURL = window.location.href;
+            }
+
+            let url = currentURL.split("&")[0];
+
+            let message = `✅ Ahora suena: 🎶 ${title} 🎶\n🔗 ${url}`;
+            return { status: 0, message: message };
+
+        } catch (e) {
+            return { status: 1, message: "❌ No se puede obtener el nombre o url de la pista actual" };
+        }
+    },
+
 }
