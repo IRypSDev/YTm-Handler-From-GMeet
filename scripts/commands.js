@@ -1,3 +1,21 @@
+export const RENDER = {
+
+    renderOptionsMenu: async () => {
+        try {
+            let optionsMenu = document.querySelector("ytmusic-menu-renderer.ytmusic-player-bar");
+            let optionsMenuButton = optionsMenu.querySelector("yt-button-shape.ytmusic-menu-renderer");
+
+            optionsMenuButton.click();
+            optionsMenuButton.click();
+
+            return { status: 0, message: "" };
+
+        } catch (e) {
+            return { status: 1, message: e.message };
+        }
+    }
+
+}
 
 export const COMMANDS = {
 
@@ -55,5 +73,22 @@ export const COMMANDS = {
             return { status: 1, message: "❌ No se puede obtener el nombre o url de la pista actual" };
         }
     },
+
+
+    startRadio: () => {
+
+        try {
+
+            let startRadioOption = document.querySelectorAll("ytmusic-menu-navigation-item-renderer")[0];
+            if ( !startRadioOption ) return { status: 1, message: "❌ No se encuentran las opciones \n🔍 Asegúrese de tener una pista válida \n(Escriba !restart o !reset y vuelva a intentarlo)" };
+            let startRadioButton = startRadioOption.querySelector("a");
+            startRadioButton.click();
+
+            return { status: 0, message: "✅ Iniciando radio..." }; 
+
+        } catch (e) {
+            return { status: 1, message: "❌ No se puede iniciar la radio" };
+        }
+    }
 
 }

@@ -55,6 +55,7 @@ function observeChatbox( chatBoxElement ) {
 
     if (chatBoxElement) {
         observer.observe(chatBoxElement, { childList: true, subtree: true });
+        sendMessageOnChatbox("🎧 Esperando comandos...");
     } else {
         console.warn("❌ Ocurrió un error al recibir el elemento de chat");
     }
@@ -72,4 +73,16 @@ async function sendCommand( command ) {
         console.warn("❌ Ocurrió un error inesperado al ejecutar el comando");
     }
 
+}
+
+
+function sendMessageOnChatbox( message ) {
+    let textInput = document.querySelector(`textarea[jsname="YPqjbf"]`);
+    let sendButton = document.querySelector(`.mcadHd`).querySelector('button');
+
+    if ( !textInput || !sendButton ) return;
+
+    textInput.value = message;
+    sendButton.disabled = false; // force button
+    sendButton.click();
 }

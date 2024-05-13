@@ -1,4 +1,4 @@
-import { COMMANDS } from "../scripts/commands.js";
+import { RENDER, COMMANDS } from "../scripts/commands.js";
 import { RESPONSE } from "../scripts/responses.js";
 
 chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
@@ -58,6 +58,10 @@ async function executeCommand( responseTabID, command ) {
 
 
 
+const ACTIONS_TYPE = {
+    preRender: "pre-render",
+    wResp: "with-response"
+}
 
 function searchCommand( responseTabID, ytmTabID, candidate ) {
 
@@ -67,25 +71,34 @@ function searchCommand( responseTabID, ytmTabID, candidate ) {
         
         case "np":
         case "nowplaying":
-            sendActionToTab( responseTabID, ytmTabID, COMMANDS.nowPlaying );
+            sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, COMMANDS.nowPlaying, null );
             break;
 
         // Controls
 
         case "prev":
-            sendActionToTab( responseTabID, ytmTabID, COMMANDS.prev );
+            sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, COMMANDS.prev, null );
             break;
         
         case "skip":
         case "s":
-            sendActionToTab( responseTabID, ytmTabID, COMMANDS.skip );
+            sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, COMMANDS.skip, null );
             break;
 
         case "pause":
         case "p":
         case "resume":
         case "r":
-            sendActionToTab( responseTabID, ytmTabID, COMMANDS.pause )
+            sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, COMMANDS.pause, null );
+            break;
+
+
+        // Other
+        case "sr":
+        case "radio":
+        case "startradio":
+        case "start radio":
+            sendActionToTab( ACTIONS_TYPE.preRender, responseTabID, ytmTabID, RENDER.renderOptionsMenu, COMMANDS.startRadio );
             break;
 
         default:
@@ -95,21 +108,53 @@ function searchCommand( responseTabID, ytmTabID, candidate ) {
 }
 
 
-function sendActionToTab( responseTabID, ytmTabID, action ) {
-    chrome.scripting.executeScript({
-        target: {tabId: ytmTabID},
-        func: action
-    }, function (result) {
+function sendActionToTab( type, responseTabID, ytmTabID, action, nextAction ) {
+
+    switch (type) {
+
+        case ACTIONS_TYPE.preRender:
+            chrome.scripting.executeScript({
+                target: {tabId: ytmTabID},
+                func: action
+            }, function (result) {
+                
+                let response = result[0].result;
         
-        let response = result[0].result;
+                if ( !response || response.status != 0 ) {
+                    sendResponseMessage( responseTabID, `❌ No pudieron realizarse las preparaciones para el accionar del comando` );
+                    return;
+                }
 
-        if ( !response || response.status != 0 ) {
-            sendResponseMessage( responseTabID, `❌ El comando no pudo completarse con éxito (${response.message})` );
-            return;
-        }
+                sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, nextAction, null )
 
-        sendResponseMessage( responseTabID, response.message );
-    });
+            });
+            break;
+
+        case ACTIONS_TYPE.wResp:
+            chrome.scripting.executeScript({
+                target: {tabId: ytmTabID},
+                func: action
+            }, function (result) {
+                
+                let response = result[0].result;
+        
+                if ( !response || response.status != 0 ) {
+                    sendResponseMessage( responseTabID, `❌ El comando no pudo completarse con éxito (${response.message})` );
+                    return;
+                }
+        
+                sendResponseMessage( responseTabID, response.message );
+            });
+            break;
+
+        default:
+            chrome.scripting.executeScript({
+                target: {tabId: ytmTabID},
+                func: action
+            });
+
+    }
+
 }
 
 
