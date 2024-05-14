@@ -1,6 +1,8 @@
 import { RENDER, COMMANDS } from "../scripts/commands.js";
 import { RESPONSE } from "../scripts/responses.js";
 
+import { splitCommandAndQuery } from "../utils/commandUtils.js";
+
 chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 
     switch( request.type ) {
@@ -49,7 +51,16 @@ async function executeCommand( responseTabID, command ) {
                 return;
             }
 
+            if ( command.startsWith("play") || command.startsWith("search") ) {
+
+                let splitCommand = splitCommandAndQuery( command );
+                searchCommandWithQuery( responseTabID, tab.id, splitCommand.command, splitCommand.query );
+                return;
+
+            } 
+
             searchCommand( responseTabID, tab.id, command );
+
         });
     });
 
@@ -59,7 +70,10 @@ async function executeCommand( responseTabID, command ) {
 
 
 const ACTIONS_TYPE = {
+    preRedir: "pre-redirect",
     preRender: "pre-render",
+    search: "redirect-search",
+    play: "search-and-play",
     wResp: "with-response"
 }
 
@@ -71,25 +85,26 @@ function searchCommand( responseTabID, ytmTabID, candidate ) {
         
         case "np":
         case "nowplaying":
-            sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, COMMANDS.nowPlaying, null );
+            sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, COMMANDS.nowPlaying );
             break;
+
 
         // Controls
 
         case "prev":
-            sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, COMMANDS.prev, null );
+            sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, COMMANDS.prev );
             break;
         
         case "skip":
         case "s":
-            sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, COMMANDS.skip, null );
+            sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, COMMANDS.skip );
             break;
 
         case "pause":
         case "p":
         case "resume":
         case "r":
-            sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, COMMANDS.pause, null );
+            sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, COMMANDS.pause );
             break;
 
 
@@ -108,9 +123,52 @@ function searchCommand( responseTabID, ytmTabID, candidate ) {
 }
 
 
-function sendActionToTab( type, responseTabID, ytmTabID, action, nextAction ) {
+function searchCommandWithQuery( responseTabID, ytmTabID, candidate, query ) {
+
+    switch( candidate ) {
+
+        case "play":
+            sendActionToTab( ACTIONS_TYPE.play, responseTabID, ytmTabID, COMMANDS.play, null, query );
+            break;
+
+        case "search":
+            sendActionToTab( ACTIONS_TYPE.search, responseTabID, ytmTabID, null, null, query );
+            break;
+
+        default:
+            sendResponseMessage( responseTabID, `❓ No se reconoce el comando` );
+    }
+    
+}
+
+
+function sendActionToTab( type, responseTabID, ytmTabID, action, nextAction = null, query = "" ) {
 
     switch (type) {
+
+        case ACTIONS_TYPE.search:
+        case ACTIONS_TYPE.play:
+
+            query = query.toLowerCase();
+            const URL = `https://music.youtube.com/search?q=${query.replace(" ", "+")}`;
+
+            chrome.tabs.update(ytmTabID, {url: URL});
+
+            if ( type == ACTIONS_TYPE.search ) {
+                sendResponseMessage( responseTabID, `✅ Mostrando los resultados de la búsqueda...` );
+                return;
+            }
+
+            function onUpdatedListener(tabId, changeInfo, tab) {
+                if (tabId === ytmTabID && changeInfo.status === 'complete') {
+                    sendActionToTab(ACTIONS_TYPE.wResp, responseTabID, ytmTabID, action);
+                    chrome.tabs.onUpdated.removeListener(onUpdatedListener);
+                }
+            }
+
+            chrome.tabs.onUpdated.addListener(onUpdatedListener);
+
+            break;
 
         case ACTIONS_TYPE.preRender:
             chrome.scripting.executeScript({
@@ -125,7 +183,7 @@ function sendActionToTab( type, responseTabID, ytmTabID, action, nextAction ) {
                     return;
                 }
 
-                sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, nextAction, null )
+                sendActionToTab( ACTIONS_TYPE.wResp, responseTabID, ytmTabID, nextAction )
 
             });
             break;

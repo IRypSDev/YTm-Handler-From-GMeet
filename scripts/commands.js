@@ -19,6 +19,31 @@ export const RENDER = {
 
 export const COMMANDS = {
 
+    play: () => {
+
+        try {
+
+            let bestResultContainer = document.querySelector("div.card-content-container.style-scope.ytmusic-card-shelf-renderer");
+
+            if ( bestResultContainer )  {
+                let buttonCTA = bestResultContainer.querySelector("button.yt-spec-button-shape-next--filled");
+                buttonCTA.click();
+                return { status: 0, message: "✅ Reproduciendo..." };
+            }
+            
+            let listResults = document.querySelectorAll("ytmusic-responsive-list-item-renderer");
+            let resultSelected = listResults[1];
+            let linkResult = resultSelected.querySelector("yt-formatted-string.title").querySelector("a");
+            linkResult.click();
+            
+            return { status: 0, message: "✅ Reproduciendo..." };
+
+        } catch (e) {
+            return { status: 1, message: e.message };
+        }
+
+    },
+
     prev: () => {
         let prevButton = document.querySelector(".previous-button");
         
