@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
                 const tabName = document.createElement('span');
                 tabName.className = 'tab-name';
-                tabName.textContent = tab.title || 'Sin título';
+                tabName.textContent = filterTitle( tab.title );
         
                 tabDiv.appendChild(tabIcon);
                 tabDiv.appendChild(tabName);
@@ -66,7 +66,8 @@ document.addEventListener('DOMContentLoaded', function() {
         removeAllChildsFromContainer( selectedImageTabContainer );
 
         const selectedTabTitle = document.getElementById('infoTitle');
-        const selectedTabID = document.getElementById('infoID');
+
+        const selectedButtonID = document.getElementById('copyID');
     
 
         const notFoundText = ' (Ninguna)';
@@ -93,9 +94,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 nowListeningImage.src = getNowPlayingImage(tab?.url) || '/icon/tmp.png';
 
                 selectedImageTabContainer.appendChild( nowListeningImage );
+                selectedImageTabContainer.style.backgroundColor = "#111";
 
-                selectedTabTitle.innerText = tab.title || "-";
-                selectedTabID.innerText = tab.id || "-";
+                selectedTabTitle.innerText = filterTitle( tab.title );
+
+                selectedButtonID.addEventListener( 'click', async () => { copyToClipboard( tab.id ) } );
     
             });
         });
@@ -116,5 +119,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return !!videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
     }
+
+    async function copyToClipboard( text ) {
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch (error) {
+            console.error("Error al copiar el texto:", error);
+            alert("Hubo un error al copiar el texto al portapapeles.");
+        }
+    }
+    
+    function filterTitle( title ) {
+        title = title || 'Sin título';
+        let titleFilter = title.replace(/\s-\sYouTube\sMusic$/, '');
+        return titleFilter;
+    }
+
 
   });

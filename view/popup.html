@@ -8,21 +8,26 @@
 </head>
 <body>
 
-    <span><b>Pestaña seleccionada</b></span> 
-    <span id="selectedTabMessage" class="warningMessage"></span>
+    <div class="float float-left">
+        <span><b>Pestaña seleccionada</b></span> 
+        <span id="selectedTabMessage" class="warningMessage"></span>
+    </div>
+
+    <div class="float float-right">
+        <img id="copyID" src="/icon/id.svg" width="20px">
+    </div>
 
     <div id="selectedTab">
         <div id="selectedImageTab"></div>
-        <div id="selectedInfoTab">
-            <h3 id="infoTitle">-</h3>
-            <b>ID</b>: <span id="infoID">-</span>
+        <h3 id="infoTitle">&nbsp;</h3>
         </div>
     </div>
 
-    <hr>
 
-    <span><b>Seleccione una pestaña</b></span>
-    <div id="tabsContainer"></div>
+    <div id="tabsSection">
+        <span><b>Seleccione una pestaña</b></span>
+        <div id="tabsContainer"></div>
+    </div>
 
 
     <script src="/view/scripts/main.js"></script>
