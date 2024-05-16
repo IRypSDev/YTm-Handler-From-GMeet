@@ -1,7 +1,9 @@
+import { COMMANDS_LIST } from "../resources/command-list.js"
+
 import { RENDER, COMMANDS } from "../scripts/commands.js";
 import { RESPONSE } from "../scripts/responses.js";
 
-import { splitCommandAndQuery } from "../utils/commandUtils.js";
+import { makeCommandsListMessage, splitCommandAndQuery } from "../utils/commandUtils.js";
 
 chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 
@@ -109,12 +111,24 @@ function searchCommand( responseTabID, ytmTabID, candidate ) {
 
 
         // Other
+
         case "sr":
         case "radio":
         case "startradio":
         case "start radio":
             sendActionToTab( ACTIONS_TYPE.preRender, responseTabID, ytmTabID, RENDER.renderOptionsMenu, COMMANDS.startRadio );
             break;
+
+
+        // Help
+        
+        case "help":
+        case "h":
+            let commandsListMessage = makeCommandsListMessage( COMMANDS_LIST );
+            let finalMessage = "📕 Lista de comandos: \n\n" + commandsListMessage;
+            sendResponseMessage( responseTabID, finalMessage );
+            break;
+
 
         default:
             sendResponseMessage( responseTabID, `❓ No se reconoce el comando` );
